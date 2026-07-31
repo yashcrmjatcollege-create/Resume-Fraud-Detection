@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Preview — ResumeGuard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="glow-blob glow-blob-1"></div>
+
+<nav class="navbar">
+  <a href="/" class="nav-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-text">Resume<span>Guard</span></div>
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/history" class="nav-link">History</a>
+  </div>
+</nav>
+
+<div class="page-container">
+  <div class="card-white">
+
+    <div class="page-title-section">
+      <h1>📄 Document Preview</h1>
+      <p>{{ filename }}</p>
+    </div>
+
+    <div class="preview-text-container">
+      <pre>{{ text }}</pre>
+    </div>
+
+    <div class="action-buttons-flex">
+      <a href="/history" class="btn-secondary">⬅ Back to History</a>
+      <a href="/" class="btn-secondary">🏠 Home</a>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

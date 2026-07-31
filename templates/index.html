@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI resume authenticity checker and fraud detection system doing 27 crucial checks.">
+  <title>Resume Fraud Checker — Verify Resume Authenticity</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* Spinner animation for button */
+    .btn-spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-emerald.loading .btn-spinner { display: inline-block; }
+    .btn-emerald.loading .btn-text-content { opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+<!-- Ambient background glows -->
+<div class="glow-blob glow-blob-1"></div>
+<div class="glow-blob glow-blob-2"></div>
+<div class="glow-blob glow-blob-3"></div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a href="/" class="nav-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-text">Resume<span>Guard</span></div>
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-link active">Home</a>
+    <a href="/history" class="nav-link">History</a>
+  </div>
+</nav>
+
+<!-- ── HERO SECTION ── -->
+<div class="hero-wrapper">
+
+  <div class="hero-grid">
+
+    <!-- LEFT COLUMN: Pitch + Upload Form -->
+    <div class="hero-content">
+      <div class="category-tag">RESUME CHECKER</div>
+
+      <h1 class="hero-title">Is your resume good enough?</h1>
+
+      <p class="hero-subtitle">
+        A free and fast AI resume fraud checker doing 27 crucial checks to ensure your resume's content, layout, and design are authentic, compatible with applicant tracking systems, and free of fake claims.
+      </p>
+
+      <!-- Upload Box -->
+      <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-card-container" id="dropZone">
+          <input type="file" name="resume" id="resumeInput" class="file-input-hidden" accept=".pdf,.docx,.txt" required>
+
+          <div class="upload-zone-text">Drop your resume here or choose a file.</div>
+          <div class="upload-zone-sub">PDF & DOCX only. Max 10MB file size.</div>
+
+          <!-- File selected preview pill -->
+          <div class="selected-file-badge" id="fileBadge">
+            <span>📄</span>
+            <span id="fileNameDisplay">No file selected</span>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn-emerald" disabled>
+            <span class="btn-spinner"></span>
+            <span class="btn-text-content">Upload Your Resume</span>
+          </button>
+
+          <div class="privacy-notice">
+            <span>🔒</span> We never share your data with 3rd parties or use it for AI model training.
+          </div>
+        </div>
+      </form>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Interactive SaaS Preview Mockup -->
+    <div class="preview-mockup-wrapper">
+      <div class="preview-card">
+
+        <!-- Top logo bar -->
+        <div class="mock-header">
+          <div class="mock-logo-tag">
+            <span>⚡</span> Enhancv Guard
+          </div>
+          <div class="mock-status-pill">LIVE SCANNER</div>
+        </div>
+
+        <!-- Body -->
+        <div class="mock-body-grid">
+
+          <!-- Left Score Circle -->
+          <div class="mock-score-col">
+            <div class="mock-score-title">Resume Score</div>
+            <div class="mock-dial" id="scoreDial">
+              <div class="mock-dial-inner">
+                <div class="mock-dial-val" id="dialVal">{% if score is not none %}{{ 100 - score }}{% else %}92{% endif %}</div>
+                <div class="mock-dial-sub">/100</div>
+              </div>
+            </div>
+
+            <!-- Check list -->
+            <div class="mock-checklist">
+              <div class="mock-check-item"><span class="icon-pass">✓</span> ATS Parse Rate</div>
+              <div class="mock-check-item"><span class="icon-pass">✓</span> Quantified Impact</div>
+              <div class="mock-check-item"><span class="icon-pass">✓</span> Skill Verification</div>
+              <div class="mock-check-item"><span class="icon-pass">✓</span> Template Scanning</div>
+              <div class="mock-check-item"><span class="icon-pass">✓</span> AI Pattern Check</div>
+            </div>
+          </div>
+
+          <!-- Right Content Details -->
+          <div class="mock-details-col">
+            <div class="mock-tabs">
+              <span class="mock-tab active">CONTENT</span>
+              <span class="mock-badge-count">0 ISSUES FOUND</span>
+            </div>
+
+            <div class="mock-progress-block">
+              <div class="mock-progress-header">
+                <span>ATS PARSE RATE</span>
+                <span>94%</span>
+              </div>
+              <div class="mock-bar-track">
+                <div class="mock-bar-fill"></div>
+              </div>
+            </div>
+
+            <div class="mock-skeleton-lines">
+              <div class="mock-line w-90"></div>
+              <div class="mock-line w-75"></div>
+              <div class="mock-line w-80"></div>
+              <div class="mock-line w-60"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div> <!-- End Hero Grid -->
+
+  <!-- ── ANALYSIS RESULTS DISPLAY (IF SUBMITTED) ── -->
+  {% if result %}
+  <div class="live-result-container" id="resultsSection">
+    <div class="result-card-main">
+
+      <div class="result-top-banner">
+        <div class="result-title-group">
+          <h2>📊 Fraud Risk Assessment Report</h2>
+          <p>Analysis completed for uploaded document</p>
+        </div>
+
+        {% if "Genuine" in result %}
+          <span class="status-pill-badge low">● Low Risk (Genuine)</span>
+        {% elif "Suspicious" in result %}
+          <span class="status-pill-badge medium">● Medium Risk (Suspicious)</span>
+        {% else %}
+          <span class="status-pill-badge high">● High Risk (Fraudulent)</span>
+        {% endif %}
+      </div>
+
+      <div class="result-content-body">
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Fraud Score</div>
+            <div class="metric-val">{{ score }}<span>/100</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Detection Confidence</div>
+            <div class="metric-val">{{ confidence }}<span>%</span></div>
+          </div>
+        </div>
+
+        <!-- Decision Banner -->
+        {% if score < 30 %}
+        <div class="recommendation-banner accept">
+          <div class="recommendation-head">System Verdict</div>
+          <div class="recommendation-text">✔ Accept Resume — verified authentic and low risk</div>
+        </div>
+        {% elif score < 60 %}
+        <div class="recommendation-banner warn">
+          <div class="recommendation-head">System Verdict</div>
+          <div class="recommendation-text">⚠ Manual Verification Required — potential anomalies detected</div>
+        </div>
+        {% else %}
+        <div class="recommendation-banner reject">
+          <div class="recommendation-head">System Verdict</div>
+          <div class="recommendation-text">❌ Reject / Flag — strong indications of template copying or fraud</div>
+        </div>
+        {% endif %}
+
+        <!-- Flagged Reasons -->
+        {% if reasons %}
+        <div class="flagged-reasons-box">
+          <h3>🔍 Detected Anomalies & Risk Factors</h3>
+          <ul class="reasons-list">
+            {% for reason in reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="action-buttons-flex">
+          {% if uploaded_filename %}
+          <a href="/preview/{{ uploaded_filename }}" class="btn-secondary" target="_blank">
+            👁 Preview Resume
+          </a>
+          {% endif %}
+          <a href="/history" class="btn-secondary">
+            📊 View History
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- JavaScript for Interactive Handling -->
+<script>
+  const resumeInput = document.getElementById('resumeInput');
+  const fileBadge   = document.getElementById('fileBadge');
+  const fileNameDisplay = document.getElementById('fileNameDisplay');
+  const submitBtn   = document.getElementById('submitBtn');
+  const dropZone    = document.getElementById('dropZone');
+  const uploadForm  = document.getElementById('uploadForm');
+
+  resumeInput.addEventListener('change', function() {
+    if (this.files && this.files.length > 0) {
+      fileNameDisplay.textContent = this.files[0].name;
+      fileBadge.classList.add('visible');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Drag and drop events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    }, false);
+  });
+
+  // Handle form submit state
+  uploadForm.addEventListener('submit', () => {
+    submitBtn.classList.add('loading');
+    submitBtn.querySelector('.btn-text-content').textContent = 'Analyzing Resume...';
+  });
+
+  // Scroll smoothly to results if present
+  {% if result %}
+  document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  {% endif %}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Analytics dashboard showing all analyzed resumes and their fraud scores.">
+  <title>Analytics Dashboard — ResumeGuard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Ambient Background Glows -->
+<div class="glow-blob glow-blob-1"></div>
+<div class="glow-blob glow-blob-2"></div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a href="/" class="nav-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-text">Resume<span>Guard</span></div>
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/history" class="nav-link active">History</a>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="page-container">
+
+  <div class="card-white">
+
+    <div class="page-title-section">
+      <h1>Resume Audit History</h1>
+      <p>Comprehensive dashboard of analyzed resumes and risk classifications.</p>
+    </div>
+
+    <!-- ── STATS DASHBOARD ── -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total Resumes</div>
+        <div class="stat-value">{{ data|length }}</div>
+      </div>
+      <div class="stat-card genuine">
+        <div class="stat-label">Genuine</div>
+        <div class="stat-value" style="color:var(--emerald-dark)">{{ genuine_count }}</div>
+      </div>
+      <div class="stat-card suspicious">
+        <div class="stat-label">Suspicious</div>
+        <div class="stat-value" style="color:var(--amber-main)">{{ suspicious_count }}</div>
+      </div>
+      <div class="stat-card fraud">
+        <div class="stat-label">Fraudulent</div>
+        <div class="stat-value" style="color:var(--rose-main)">{{ fraud_count }}</div>
+      </div>
+    </div>
+
+    <!-- ── RESUME HISTORY TABLE ── -->
+    <div class="table-card">
+      {% if data %}
+      <table class="saas-table">
+        <thead>
+          <tr>
+            <th>Document Name</th>
+            <th>Fraud Score</th>
+            <th>Risk Status</th>
+            <th>Analyzed On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in data %}
+          <tr>
+            <td>
+              <div class="filename-wrapper">
+                <div class="file-type-icon">📄</div>
+                <span title="{{ row[1] }}">{{ row[1] }}</span>
+              </div>
+            </td>
+            <td>
+              <strong style="font-size:1.05rem;color:var(--text-dark)">{{ row[2] }}</strong>/100
+            </td>
+            <td>
+              {% if "Genuine" in row[3] %}
+                <span class="status-pill-badge low">✔ Genuine</span>
+              {% elif "Suspicious" in row[3] %}
+                <span class="status-pill-badge medium">⚠ Suspicious</span>
+              {% else %}
+                <span class="status-pill-badge high">✕ Fraudulent</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--text-muted);font-size:0.85rem">{{ row[4] }}</td>
+            <td>
+              <a href="/preview/{{ row[1] }}" class="btn-secondary" target="_blank" style="padding:6px 14px;font-size:0.82rem;">
+                👁 View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-table-state">
+        <div style="font-size:2.5rem;margin-bottom:12px;opacity:0.5;">📭</div>
+        <p>No resumes analyzed yet. <a href="/" style="color:var(--indigo-primary);font-weight:700;text-decoration:none">Upload a resume now →</a></p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── ACTION BUTTONS ── -->
+    <div class="action-buttons-flex" style="margin-top:28px;justify-content:space-between;align-items:center;">
+      <a href="/" class="btn-secondary">⬅ Back to Home</a>
+      <a href="/clear-history" class="btn-danger-outline" onclick="return confirm('Are you sure you want to clear all history? This action cannot be undone.')">
+        🗑 Clear All History
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
